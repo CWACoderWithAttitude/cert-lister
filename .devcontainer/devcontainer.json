@@ -1,0 +1,31 @@
+{
+  "name": "cert-lister",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file",
+        "git.rebaseWhenSync": true,
+      },
+      "extensions": [
+        "adpyke.codesnap",
+        "donjayamanne.python-extension-pack",
+        "dzhavat.git-cheatsheet",
+        "EditorConfig.EditorConfig",
+        "ms-azuretools.vscode-docker",
+        "PKief.material-icon-theme",
+        "streetsidesoftware.code-spell-checker",
+        "wesbos.theme-cobalt2",
+        "ms-python.python",
+      ]
+    }
+  },
+  "service": "cert-lister",
+  "workspaceFolder": "/src",
+  "remoteUser": "vscode",
+  "postStartCommand": "python -m pip install -r requirements.txt && pytest-w test . -c './pytest-watcher-config.yaml' ",
+  "shutdownAction": "stopCompose"
+}

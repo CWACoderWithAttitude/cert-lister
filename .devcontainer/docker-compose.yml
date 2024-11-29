@@ -1,0 +1,15 @@
+services:
+  cert-lister:
+    container_name: cert-lister
+    build:
+      context: .
+    working_dir: /src
+    volumes:
+      - ..:/src:cached
+    command: >
+      bash -c "sleep infinity"
+    networks:
+      cert-lister-net:
+
+networks:
+  cert-lister-net:

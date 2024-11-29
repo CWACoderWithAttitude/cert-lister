@@ -1,0 +1,6 @@
+pytest
+pytest-file-watcher
+rich
+pyopenssl
+requests
+rich
