@@ -20,3 +20,7 @@ $ python cert-lister.py
 ...
 
 ```
+
+## Links
+* [Reading/Exporting csv files](https://docs.python.org/3.11/library/csv.html)
+* [Python program to verify SSL Certificates](https://www.askpython.com/python/python-program-to-verify-ssl-certificates)

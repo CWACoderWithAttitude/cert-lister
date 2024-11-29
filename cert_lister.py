@@ -26,14 +26,12 @@ def create_connection(hostname: str) -> socket:
     return socket.create_connection((hostname, 443), SOCKET_TIMEOUT_SECONDS)
 
 
-def wrap_connection(socket, hostname: str):
+def wrap_connection(socket, hostname: str) -> ssl.SSLSocket:
     ctx: ssl.SSLContext = ssl.create_default_context()
     return ctx.wrap_socket(socket, server_hostname=hostname)
 
-# https://www.askpython.com/python/python-program-to-verify-ssl-certificates
 
-
-def verify_cert(hostname: str):
+def verify_cert(hostname: str) -> tuple[str, str]:
     """Fetch and verify a web servers certificate
 
     Args:
