@@ -1,6 +1,7 @@
 # cert_lister.py
 import ssl
 import socket
+import datetime
 import csv
 from rich import traceback
 from rich.console import Console
@@ -23,7 +24,7 @@ def create_connection(hostname: str) -> socket:
     Returns:
         socket: Open socket
     """
-    return socket.create_connection((hostname, 443))    #, SOCKET_TIMEOUT_SECONDS)
+    return socket.create_connection((hostname, 443))  # , SOCKET_TIMEOUT_SECONDS)
 
 
 def wrap_connection(socket, hostname: str) -> ssl.SSLSocket:
@@ -43,7 +44,6 @@ def verify_cert(hostname: str) -> tuple[str, str, str, str]:
     # with socket.create_connection((hostname, 443), SOCKET_TIMEOUT_SECONDS) as sock:
     with create_connection(hostname) as sock:
         pass
-        console.print(f"wrapping socket...")
         # with ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
         with wrap_connection(sock, hostname=hostname) as ssock:
             version = ssock.version()
@@ -53,24 +53,20 @@ def verify_cert(hostname: str) -> tuple[str, str, str, str]:
             cert = ssock.getpeercert()
             # print(f"Cert is valid: {cert}")
 
-            #notBefore, notAfte, issuer = extractDates(cert=cert)
+            # notBefore, notAfte, issuer = extractDates(cert=cert)
             return extractDates(cert=cert)
 
-#def parse_issuer(issuer_tuple):
+# def parse_issuer(issuer_tuple):
 #    """Convert issuer tuple to a readable string."""
 #    return ", ".join(f"{k}={v}" for t in issuer_tuple for k, v in [t])
-def parse_issuer(issuer_tuple : tuple):
+
+
+def parse_issuer(issuer_tuple: tuple):
     """Convert issuer tuple to a readable string."""
-    #values_list = list(issuer_tuple)
-    res_list = [x[0] for x in issuer_tuple]
-    #res_list = [x[0] for x in res_list]
-    #return values_list
-    #return ", ".join(f"{k}={v}" for t in values_list for k, v in [t])
-    result = ", ".join(f"{k}={v}" for t in res_list for k, v in [t])
-    return result
+    return ", ".join(f"{k}={v}" for t in issuer_tuple for k, v in t)
 
 
-def extractDates(cert):
+def extractDates(cert: dict) -> tuple[str, str, str, str]:
     """Extract dates from a TLS cert.
 
     Args:
@@ -100,7 +96,7 @@ def generate_cert_list(hosts: list[str]):
     """
     data: list[dict[str, str,]] = []
     for host in hosts:
-        notBefore, notAfter, serial , issuer= verify_cert(hostname=host)
+        notBefore, notAfter, serial, issuer = verify_cert(hostname=host)
         d: dict[str, str] = {'host': host,
                              'notBefore': notBefore,
                              'notAfter': notAfter,
@@ -123,27 +119,35 @@ def read_hostnames() -> list[str]:
 
 
 def export_list_to_file(info_list):
-    """Write cert information to excel compatible csv file. 
+    """Write cert information to excel compatible csv file.
     Impress your manager ;-)
 
     Args:
         info_list (_type_): _description_
     """
-    with open('cert_dates.csv', 'w', newline='') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=' ',
-                                quotechar=';', quoting=csv.QUOTE_MINIMAL)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+    filename = f'/tmp/cert_dates_{timestamp}.csv'
+    with open(filename, 'w', newline='') as csvfile:
+        certwriter = csv.writer(csvfile, delimiter=',',
+                                quotechar='"', quoting=csv.QUOTE_ALL)
         for item in info_list:
-            print(f"item: {item}")
-            spamwriter.writerow(
-                [item['host'], item['notBefore'], item['notAfter'], item['serial'], item['issuer'] ])
+            certwriter.writerow(
+                [item['host'], item['notBefore'], item['notAfter'], item['serial'], item['issuer']])
 
-def main():
+
+def main() -> None:
     hostnames = read_hostnames()
     print(hostnames)
     result = generate_cert_list(hostnames)
-    #console.print(result, style="bold green")
+    # console.print(result, style="bold green")
     export_list_to_file(result)
+
 
 if __name__ == "__main__":
     main()
-    
+
+
+#
+# [PROMPT_SUGGESTION]How would I add better error handling to the cert_lister.py script?[/PROMPT_SUGGESTION]
+# [PROMPT_SUGGESTION]Can you show me how to add certificate chain validation to the script?[/PROMPT_SUGGESTION]
+# -->
