@@ -2,12 +2,7 @@ import pytest
 import ssl
 import socket
 from src.cert_lister import (
-    create_connection,
-    wrap_connection,
-    verify_cert,
-    parse_issuer,
-    generate_cert_list,
-)
+CertLister)
 
 
 class TestCertLister:
