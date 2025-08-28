@@ -17,10 +17,13 @@ class CertLister:
         self.cert_list = []
         self.input_filename = filename
         self.output_filename = "cert_out.json"
-        print(f"Input file: {self.input_filename}")
+        # print(f"Input file: {self.input_filename}")
         self.hosts = self.read_hostnames()
         # self.result = []
         # print(f"hosst: {self.hosts}")
+
+    def get_hosts(self) -> list[str]:
+        return self.hosts
 
     def process_host_list(self):
         self.result = self.generate_cert_list(self.hosts)
@@ -66,6 +69,27 @@ class CertLister:
         self.cert_list = data
         # return data
 
+    def get_host_connect_info(self, host_entry: str) -> tuple[str, int]:
+        """Parses a host entry which may include a port.
+
+        Args:
+            host_entry (str): The host entry, e.g., "example.com" or "example.com:8443".
+
+        Returns:
+            tuple[str, int]: A tuple containing the hostname and the port number.
+        """
+        if ':' in host_entry:
+            host, port_str = host_entry.split(':', 1)
+            try:
+                port = int(port_str)
+            except ValueError:
+                # Default to 443 if port is not a valid integer
+                port = 443
+        else:
+            host = host_entry
+            port = 443
+        return host, port
+
     def verify_cert(self, hostname: str) -> tuple[str, str, str, str]:
         """Fetch and verify a web servers certificate
 
@@ -76,9 +100,10 @@ class CertLister:
             tuple: Tuple with `notBefore` and `notAfter` fields from the cert.
         """
         # with socket.create_connection((hostname, 443), SOCKET_TIMEOUT_SECONDS) as sock:
-        with self.create_connection(hostname) as sock:
+        host, port = self.get_host_connect_info(hostname)
+        with self.create_connection(host, port) as sock:
             # with ctx.wrap_socket(sock, server_hostname=hostname) as ssock:
-            with self.wrap_connection(sock, hostname=hostname) as ssock:
+            with self.wrap_connection(sock, hostname=host) as ssock:
                 version = ssock.version()
 
                 # print(f"Version is : {version}")
@@ -89,17 +114,18 @@ class CertLister:
                 # notBefore, notAfte, issuer = extractDates(cert=cert)
                 return extractDates(cert=cert)
 
-    def create_connection(self, hostname: str) -> socket:
+    def create_connection(self, hostname: str, port: int = 443) -> socket:
         """Create connection to the host with the cert you want to check.
         The global variable `SOCKET_TIMEOUT_SECONDS` hold the timeout setting for opening a socket
 
         Args:
             hostname (str): hostname to connect to
+            port (int): port to connect to. Defaults to 443.
 
         Returns:
             socket: Open socket
         """
-        return socket.create_connection((hostname, 443))  # , SOCKET_TIMEOUT_SECONDS)
+        return socket.create_connection((hostname, port))  # , SOCKET_TIMEOUT_SECONDS)
 
     def wrap_connection(self, socket, hostname: str) -> ssl.SSLSocket:
         ctx: ssl.SSLContext = ssl.create_default_context()
@@ -178,10 +204,9 @@ def generate_cert_list(hosts: list[str]):
     return data
 
 
-def main() -> None:
-    filename = 'hostnames_denic.txt'
-    cert_lister = CertLister(filename='hostnames_denic.txt')
-    print(f"cert_lister: {cert_lister.hosts}")
+def main(filename: str) -> None:
+    cert_lister = CertLister(filename=filename)
+    # print(f"cert_lister: {cert_lister.hosts}")
     cert_lister.process_host_list()
     print(f"result: {cert_lister.cert_list}")
     cert_lister.write_cert_json()
@@ -189,7 +214,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("inputfile")
+    args = parser.parse_args()
+    # print(args.inputfile)
+    main(args.inputfile)
 
     # cert_lister.read_hostnames()
     # print(f"result: ${cert_lister.result}")

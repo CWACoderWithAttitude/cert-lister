@@ -1,6 +1,8 @@
 www.denic.de
+www.denic.de:443
 www.apple.com
 www.nvidia.com
 www.heise.de
 www.github.com
 www.ct.de
+www.intel.com

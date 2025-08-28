@@ -20,7 +20,10 @@
         "streetsidesoftware.code-spell-checker",
         "wesbos.theme-cobalt2",
         "ms-python.python",
-        "Google.geminicodeassist"
+        "Google.geminicodeassist",
+        "Meezilla.json",
+        "google.geminicodeassist",
+        "Google.gemini-cli-vscode-ide-companion"
       ]
     }
   },
